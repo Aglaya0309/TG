@@ -1,15 +1,25 @@
 import asyncio
-from aiogram import Bot, Dispatcher
+import os
+from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.types import Message, FSInputFile
 import aiohttp
 from config import TOKEN
+from googletrans import Translator
 
+# Настройки
 WEATHER_API_KEY = "bff532ac20fe458487263927252506"
 CITY = "Krasnodar"
+IMG_FOLDER = "img"
+VOICE_MESSAGE = "Добрый день! Это тестовое голосовое сообщение от бота."
+
+# Создаем папку для изображений
+os.makedirs(IMG_FOLDER, exist_ok=True)
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+translator = Translator()
+
 
 async def get_weather():
     url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={CITY}&lang=ru"
@@ -33,11 +43,20 @@ async def get_weather():
     except Exception as e:
         return f"⚠ Ошибка подключения к API: {e}"
 
+
 @dp.message(CommandStart())
 async def start(message: Message):
     await message.answer(
-        "👋 Привет! Я погодный бот.\n"
-            )
+        "👋 Привет! Я многофункциональный бот.\n"
+        "Вот что я умею:\n"
+        "/start - Начать работу\n"
+        "/help - Помощь\n"
+        "/weather - Погода в Краснодаре\n"
+        "/voice - Получить голосовое сообщение\n"
+        "Отправьте мне фото - я сохраню его\n"
+        "Отправьте текст - я переведу его на английский"
+    )
+
 
 @dp.message(Command("help"))
 async def help_command(message: Message):
@@ -45,16 +64,53 @@ async def help_command(message: Message):
         "ℹ Справка по командам:\n"
         "/start - Перезапустить бота\n"
         "/weather - Погода в Краснодаре\n"
-        "/help - Эта справка"
+        "/voice - Получить голосовое сообщение\n"
+        "/help - Эта справка\n\n"
+        "Просто отправьте:\n"
+        "- Фото - я сохраню его\n"
+        "- Текст - я переведу его на английский"
     )
+
 
 @dp.message(Command("weather"))
 async def weather(message: Message):
     weather_info = await get_weather()
     await message.answer(weather_info)
 
+
+@dp.message(Command('voice'))
+async def voice(message: Message):
+    voice = FSInputFile("Tenor.ogg")
+    await message.answer_voice(voice)
+
+
+@dp.message(F.photo)
+async def save_photo(message: Message):
+    photo = message.photo[-1]
+    file_id = photo.file_id
+    file = await bot.get_file(file_id)
+    file_path = file.file_path
+
+    
+    file_name = f"{file_id}.jpg"
+    save_path = os.path.join(IMG_FOLDER, file_name)
+    await bot.download_file(file_path, save_path)
+
+    await message.answer(f"Фото сохранено как {file_name} в папке {IMG_FOLDER}")
+
+
+@dp.message(F.text)
+async def translate_text(message: Message):
+    try:
+        translation = translator.translate(message.text, dest='en')
+        await message.answer(f"Перевод на английский:\n{translation.text}")
+    except Exception as e:
+        await message.answer(f"Ошибка перевода: {e}")
+
+
 async def main():
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
