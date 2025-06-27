@@ -11,7 +11,7 @@ from googletrans import Translator
 WEATHER_API_KEY = "bff532ac20fe458487263927252506"
 CITY = "Krasnodar"
 IMG_FOLDER = "img"
-VOICE_MESSAGE = "Добрый день! Это тестовое голосовое сообщение от бота."
+
 
 # Создаем папку для изображений
 os.makedirs(IMG_FOLDER, exist_ok=True)
@@ -91,7 +91,7 @@ async def save_photo(message: Message):
     file = await bot.get_file(file_id)
     file_path = file.file_path
 
-    
+
     file_name = f"{file_id}.jpg"
     save_path = os.path.join(IMG_FOLDER, file_name)
     await bot.download_file(file_path, save_path)
