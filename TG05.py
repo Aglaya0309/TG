@@ -23,7 +23,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-### ВАШ СУЩЕСТВУЮЩИЙ КОД ДЛЯ МЕМОВ (НЕ ИЗМЕНЯЛСЯ) ###
 async def meme(update: Update, context: ContextTypes.DEFAULT_TYPE):
     meme_list = "\n".join([f"{key}. {val['name']}" for key, val in MEME_TEMPLATES.items()])
     await update.message.reply_text(f"Выбери номер шаблона мема:\n{meme_list}")
@@ -76,12 +75,8 @@ async def handle_meme_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         user_data.clear()
 
 
-######################################################
-
-### НОВЫЕ ФУНКЦИИ ДЛЯ SPACEX ###
 async def spacex_launches(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Простой и надежный вариант получения запусков"""
-    try:
+        try:
         # 1. Делаем один четкий запрос
         response = requests.get(
             "https://api.spacexdata.com/v4/launches/latest",
